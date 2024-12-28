@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cost Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    label { display: block; margin: 10px 0 5px; }
+    input { width: 100%; padding: 8px; margin-bottom: 15px; }
+    button { padding: 10px 20px; background-color: #007BFF; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    .result { margin-top: 20px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Cost Calculator</h1>
+  <form id="calcForm">
+    <label for="expenses">Total Amount Needed (including profit):</label>
+    <input type="number" id="expenses" name="expenses" required>
+
+    <label for="mincount">Minimum Expected Count:</label>
+    <input type="number" id="mincount" name="mincount" required>
+
+    <label for="maxcount">Maximum Expected Count:</label>
+    <input type="number" id="maxcount" name="maxcount" required>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  <div id="result" class="result" style="display: none;"></div>
+
+  <script>
+    document.getElementById('calcForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      console.log("Form data:", data);
+
+      try {
+        const response = await fetch('/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const result = await response.json();
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result').innerHTML = `
+          <p><strong>Normal Cost per Person (Min Count):</strong> ${result.normalCostMin}</p>
+          <p><strong>Early Bird Cost per Person (Min Count):</strong> ${result.earlyBirdCostMin}</p>
+          <p><strong>Normal Cost per Person (Max Count):</strong> ${result.normalCostMax}</p>
+          <p><strong>Early Bird Cost per Person (Max Count):</strong> ${result.earlyBirdCostMax}</p>
+        `;
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
